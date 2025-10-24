@@ -7,13 +7,16 @@ import {
   Platform,
   Dimensions,
 } from "react-native";
+
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import Search from "./Search";
+
 import ScanButton from "./ScanButton";
-import MenuButton from "./MenuButton";
+
+import MenuButton from "./headerbutton/MenuButton";
+import Search from "./headerbutton/Search";
 
 interface HeaderProps {}
 
