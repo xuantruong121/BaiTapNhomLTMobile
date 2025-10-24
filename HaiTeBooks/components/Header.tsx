@@ -13,7 +13,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import ScanButton from "./ScanButton";
+import ScanButton from "./headerbutton/ScanButton";
 
 import MenuButton from "./headerbutton/MenuButton";
 import Search from "./headerbutton/Search";
