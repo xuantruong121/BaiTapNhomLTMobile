@@ -7,18 +7,25 @@ import Header from "../components/Header";
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <Stack
-        screenOptions={{
-          header: () => <Header />,
-        }}
-      />
-
       <View style={styles.container}>
         <Stack
           screenOptions={{
             header: () => <Header />,
           }}
-        />
+        >
+          <Stack.Screen
+            name="account"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="account/register"
+            options={{
+              headerShown: false,
+            }}
+          />
+        </Stack>
         <BotTabs />
       </View>
     </SafeAreaProvider>

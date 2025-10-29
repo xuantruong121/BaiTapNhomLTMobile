@@ -15,7 +15,7 @@ const SuggestionsTab: React.FC<SuggestionsTabProps> = ({ isActive = false }) => 
       <View style={styles.iconContainer}>
         <Ionicons 
           name={isActive ? "star" : "star-outline"} 
-          size={20} 
+          size={25} 
           color={iconColor} 
         />
       </View>
@@ -31,10 +31,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconContainer: {
-    marginBottom: 1,
+    marginBottom: 0,
   },
   text: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
   },
 });

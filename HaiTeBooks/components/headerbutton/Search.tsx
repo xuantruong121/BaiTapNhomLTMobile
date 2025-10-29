@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, TextInput, View } from "react-native";
 
 interface SearchProps {
   placeholder?: string;
@@ -49,13 +49,6 @@ const Search: React.FC<SearchProps> = ({
         />
       </View>
 
-      <TouchableOpacity
-        style={styles.scanButton}
-        accessibilityLabel="Quét mã vạch"
-        onPress={() => onScanPress && onScanPress()}
-      >
-        <Ionicons name="barcode-outline" size={18} color="#C92127" />
-      </TouchableOpacity>
     </View>
   );
 };
