@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Dimensions,
-  Image,
-  Platform,
-  StyleSheet,
-  View
-} from "react-native";
+import { Dimensions, Image, Platform, StyleSheet, View } from "react-native";
 
 import {
   SafeAreaView,
@@ -33,7 +27,7 @@ const Header: React.FC<HeaderProps> = () => {
     <SafeAreaView style={[styles.container, { paddingTop: insets.top || 0 }]}>
       <View style={[styles.logoWrapper, { top: logoTop }]}>
         <Image
-          source={require("../assets/images/logo2T.png")}
+          source={require("../../../assets/images/logo2T.png")}
           style={styles.logo}
         />
       </View>

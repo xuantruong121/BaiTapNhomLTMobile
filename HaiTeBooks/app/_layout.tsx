@@ -1,8 +1,8 @@
 import { Stack } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import BotTabs from "../components/BotTabs";
-import Header from "../components/Header";
+import BotTabs from "../app/mobile/components/BotTabs";
+import Header from "../app/mobile/components/Header";
 
 export default function RootLayout() {
   return (
