@@ -1,6 +1,8 @@
 package iuh.fit.haitebooks_backend.controller;
 
-import iuh.fit.haitebooks_backend.dtos.*;
+import iuh.fit.haitebooks_backend.dtos.request.LoginRequest;
+import iuh.fit.haitebooks_backend.dtos.request.RegisterRequest;
+import iuh.fit.haitebooks_backend.dtos.response.AuthResponse;
 import iuh.fit.haitebooks_backend.model.User;
 import iuh.fit.haitebooks_backend.repository.UserRepository;
 import iuh.fit.haitebooks_backend.security.JwtUtil;

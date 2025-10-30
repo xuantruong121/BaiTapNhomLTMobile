@@ -12,8 +12,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -29,16 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
-        // 🚫 Bỏ qua các endpoint public
-        String path = request.getServletPath();
-        if (path.startsWith("/api/auth") || path.startsWith("/swagger") || path.startsWith("/v3/api-docs")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // ✅ Chỉ xử lý JWT nếu có Authorization header
         String header = request.getHeader("Authorization");
+
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             if (jwtUtil.validateToken(token)) {

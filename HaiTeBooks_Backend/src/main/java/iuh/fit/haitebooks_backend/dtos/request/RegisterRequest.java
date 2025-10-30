@@ -1,4 +1,4 @@
-package iuh.fit.haitebooks_backend.dtos;
+package iuh.fit.haitebooks_backend.dtos.request;
 
 public class RegisterRequest {
     private String username;

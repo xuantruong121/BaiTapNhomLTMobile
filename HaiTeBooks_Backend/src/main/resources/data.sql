@@ -71,12 +71,21 @@ CREATE TABLE books (
     FOREIGN KEY (category_id) REFERENCES book_categories(id)
 );
 
+ALTER TABLE books
+    ADD COLUMN barcode VARCHAR(100) UNIQUE AFTER author;
+
 INSERT INTO books (title, author, price, stock, description, image_url, category_id) VALUES
  ('Clean Code', 'Robert C. Martin', 350000, 20, 'A handbook of agile software craftsmanship.', 'https://example.com/cleancode.jpg', 1),
  ('The Pragmatic Programmer', 'Andrew Hunt', 420000, 15, 'Journey to mastery in software development.', 'https://example.com/pragmatic.jpg', 1),
  ('Design Patterns', 'Erich Gamma', 480000, 10, 'Elements of reusable object-oriented software.', 'https://example.com/designpatterns.jpg', 1),
  ('Rich Dad Poor Dad', 'Robert Kiyosaki', 250000, 30, 'What the rich teach their kids about money.', 'https://example.com/richdad.jpg', 2),
  ('Harry Potter and the Sorcerer\'s Stone', 'J.K. Rowling', 320000, 50, 'Fantasy novel for all ages.', 'https://example.com/harrypotter.jpg', 3);
+
+UPDATE books SET barcode = '9780132350884' WHERE title = 'Clean Code';
+UPDATE books SET barcode = '9780201616224' WHERE title = 'The Pragmatic Programmer';
+UPDATE books SET barcode = '9780201633610' WHERE title = 'Design Patterns';
+UPDATE books SET barcode = '9780446677455' WHERE title = 'Rich Dad Poor Dad';
+UPDATE books SET barcode = '9780747532699' WHERE title = 'Harry Potter and the Sorcerer''s Stone';
 
 -- ========================
 -- 5️⃣ CART ITEMS

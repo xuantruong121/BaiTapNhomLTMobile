@@ -24,6 +24,6 @@ public class Payment {
     @Column(nullable = false, name = "payment_date")
     private LocalDateTime paymentDate;
 
-    @Column(nullable = false)
-    private Enum<Status_Payment> status;
+    @Enumerated(EnumType.STRING)
+    private Status_Payment status;
 }

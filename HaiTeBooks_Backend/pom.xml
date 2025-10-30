@@ -30,10 +30,11 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
+<!--           Open API / Swagger             -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.7.0</version>
+            <version>2.2.0</version>
         </dependency>
         <dependency>
             <groupId>io.github.cdimascio</groupId>

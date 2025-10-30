@@ -1,4 +1,4 @@
-package iuh.fit.haitebooks_backend.dtos;
+package iuh.fit.haitebooks_backend.dtos.response;
 
 import lombok.Data;
 

@@ -1,5 +1,7 @@
 package iuh.fit.haitebooks_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,19 +38,26 @@ public class Book {
     @Column(length = 255)
     private String imageUrl;
 
+    @Column(nullable = false, unique = true)
+    private String barcode;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "books"})
     private BookCategory category;
 
     // Mapping to Cart
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Cart> cartItems;
 
     // Mapping to Review
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Review> reviews;
 
     // Mapping to BookEmbedding
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private BookEmbedding bookEmbedding;
 }
