@@ -1,178 +1,223 @@
-import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Image, Platform, StyleSheet, Text, View } from 'react-native';
-import BuyNowButton from './BuyNowButton';
+import axios from "axios";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import BuyNowButton from "./BuyNowButton";
 
-export interface ProductCardProps {
+type ApiBook = {
+  id: number;
   title: string;
-  price: string;
-  oldPrice?: string;
-  badge?: string;
-  image?: any;
+  author?: string;
+  price: number;
+  stock: number;
+  description?: string;
   imageUrl?: string;
-  category?: string;
-  discountLabel?: string;
-  soldLabel?: string;
-  progressPercent?: number;
-  stock?: number;
-  rating?: number;
-  onBuy?: () => void;
-}
+  barcode?: string;
+  categoryName?: string;
+};
 
-const ProductCard: React.FC<ProductCardProps> = ({ title, price, oldPrice, badge, image, imageUrl, category, discountLabel, soldLabel = 'Đã bán 10', progressPercent = 60, stock, rating, onBuy }) => {
+const formatPrice = (v: number) =>
+  new Intl.NumberFormat("vi-VN").format(v) + " đ";
+
+const Card: React.FC<{ item: ApiBook }> = ({ item }) => {
+  const uri =
+    item.barcode || item.imageUrl || "https://via.placeholder.com/300x400";
   return (
     <View style={styles.card}>
-      <View style={styles.cardImageWrap}>
-        {badge ? (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{badge}</Text>
-          </View>
-        ) : null}
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.cardImage} />
-        ) : (
-          <Image source={image as any} style={styles.cardImage} />
-        )}
+      <View style={styles.imageWrap}>
+        <Image source={{ uri }} style={styles.image} resizeMode="cover" />
       </View>
-      {category ? <Text style={styles.category}>{category}</Text> : null}
-      <View style={styles.titleWrap}>
-        <Text numberOfLines={2} style={styles.cardTitle}>{title}</Text>
-      </View>
-      {typeof rating === 'number' ? (
-        <View style={styles.ratingRow}>
-          <Ionicons name="star" size={14} color="#F59E0B" />
-          <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+
+      <View style={styles.info}>
+        <Text style={styles.category} numberOfLines={1}>
+          {item.categoryName || "Khác"}
+        </Text>
+
+        {/* Title wrapped in fixed-height box so all titles align */}
+        <View style={styles.titleWrap}>
+          <Text style={styles.title} numberOfLines={2}>
+            {item.title}
+          </Text>
         </View>
-      ) : null}
-      <View style={styles.priceRow}>
-        <Text style={styles.cardPrice}>{price}</Text>
+
+        <View style={styles.metaRow}>
+          <Text style={styles.price}>{formatPrice(item.price)}</Text>
+          <Text style={styles.stock}>Còn {item.stock}</Text>
+        </View>
+
+        <View style={styles.buyWrap}>
+          <BuyNowButton
+            onPress={() => {
+              /* handle buy */
+            }}
+          />
+        </View>
       </View>
-      <Text style={styles.soldText}>{typeof stock === 'number' ? `Còn ${stock}` : soldLabel}</Text>
-      <BuyNowButton onPress={onBuy} />
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  card: {
-    width: 180,
-    borderWidth: 1,
-    borderColor: '#EFEFEF',
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    padding: 12,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.04,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 1,
-      },
-    }),
-  },
-  cardImageWrap: {
-    height: 170,
-    borderRadius: 10,
-    backgroundColor: '#FAFAFA',
-    marginBottom: 10,
-    overflow: 'hidden',
-  },
-  badge: {
-    position: 'absolute',
-    top: 6,
-    left: 6,
-    zIndex: 2,
-    backgroundColor: '#E6F4FF',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  badgeText: {
-    fontSize: 10,
-    color: '#0077CC',
-    fontWeight: '700',
-  },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
-  },
-  cardTitle: {
-    fontSize: 13,
-    color: '#2E2E2E',
-    lineHeight: 17,
-  },
-  titleWrap: {
-    minHeight: 34,
-    justifyContent: 'flex-end',
-    marginBottom: 8,
-  },
-  category: {
-    fontSize: 11,
-    color: '#697386',
-    marginBottom: 4,
-    fontWeight: '600',
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 8,
-    marginBottom: 8,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 6,
-  },
-  ratingText: {
-    fontSize: 12,
-    color: '#374151',
-    fontWeight: '600',
-  },
-  cardPrice: {
-    fontSize: 16,
-    color: '#C92127',
-    fontWeight: '800',
-  },
-  cardOldPrice: {
-    fontSize: 12,
-    color: '#A1A1A1',
-    textDecorationLine: 'line-through',
-    marginTop: 2,
-    marginBottom: 6,
-  },
-  discountPill: {
-    backgroundColor: '#C92127',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  discountText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  progressBar: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#F3F3F3',
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#FFCDD2',
-  },
-  soldText: {
-    fontSize: 11,
-    color: '#8C8C8C',
-    marginTop: 6,
-  },
-});
+const ProductCard: React.FC = () => {
+  const [books, setBooks] = useState<ApiBook[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const source = axios.CancelToken.source();
+
+    const fetchBooks = async () => {
+      try {
+        const resp = await axios.get<ApiBook[]>(
+          "http://192.168.100.156:8080/api/books",
+          { timeout: 10000, cancelToken: source.token }
+        );
+        if (mounted) setBooks(resp.data || []);
+      } catch (err: any) {
+        if (axios.isCancel(err)) return;
+        if (mounted)
+          setError(
+            err?.response?.data?.message ??
+              err.message ??
+              "Lỗi khi lấy dữ liệu từ API"
+          );
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchBooks();
+    return () => {
+      mounted = false;
+      source.cancel("Component unmounted");
+    };
+  }, []);
+
+  // group books by categoryName
+  const sections = useMemo(() => {
+    const map = books.reduce<Record<string, ApiBook[]>>((acc, b) => {
+      const key =
+        b.categoryName?.trim() && b.categoryName!.trim().length > 0
+          ? b.categoryName!
+          : "Khác";
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(b);
+      return acc;
+    }, {});
+    return map;
+  }, [books]);
+
+  if (loading) return <ActivityIndicator style={{ margin: 12 }} />;
+
+  if (error) return <Text style={styles.error}>{error}</Text>;
+
+  return (
+    <View>
+      {Object.entries(sections).map(([category, items]) => (
+        <View key={category} style={styles.section}>
+          <Text style={styles.sectionTitle}>{category}</Text>
+
+          <FlatList
+            data={items}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.list}
+            renderItem={({ item }) => <Card item={item} />}
+          />
+        </View>
+      ))}
+    </View>
+  );
+};
 
 export default ProductCard;
 
-
+const styles = StyleSheet.create({
+  list: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignItems: "flex-start",
+  },
+  section: {
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    paddingHorizontal: 12,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#C5181A",
+    marginBottom: 8,
+  },
+  card: {
+    width: 180,
+    marginRight: 12,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#C5181A",
+    elevation: 3,
+  },
+  imageWrap: {
+    width: "100%",
+    height: 150,
+    backgroundColor: "#fbfbfb",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    width: "94%",
+    height: "94%",
+    borderRadius: 8,
+    backgroundColor: "#f6f6f6",
+  },
+  info: {
+    padding: 12,
+    // make info area consistent so elements align across cards
+    minHeight: 120,
+    justifyContent: "flex-start",
+  },
+  category: {
+    fontSize: 12,
+    color: "#9CA3AF",
+    marginBottom: 6,
+  },
+  // ensure title area has fixed height (2 lines) so neighbouring cards align
+  titleWrap: {
+    height: 44, // đủ cho 2 dòng với fontSize 14 + lineHeight 18
+    marginBottom: 6,
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#111827",
+    lineHeight: 18,
+  },
+  // meta row holds price and stock horizontally aligned
+  metaRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#C5181A",
+  },
+  stock: {
+    fontSize: 12,
+    color: "#6B7280",
+  },
+  buyWrap: {
+    marginTop: 8,
+  },
+  error: { color: "#e74c3c", textAlign: "center", marginTop: 12 },
+});
