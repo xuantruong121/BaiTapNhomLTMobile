@@ -9,9 +9,11 @@ import {
   Image,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import axiosInstance from "../../config/axiosConfig";
+import BookDetail from "./BookDetail";
 import BuyNowButton from "./BuyNowButton";
 
 type ApiBook = {
@@ -36,93 +38,112 @@ const formatPrice = (v: number) =>
 
 const Card: React.FC<{ item: BookWithReviews }> = ({ item }) => {
   const router = useRouter();
+  const [showBookDetail, setShowBookDetail] = useState(false);
   const uri = item.imageUrl || "https://via.placeholder.com/300x400";
 
   return (
-    <View style={styles.card}>
-      <View style={styles.imageWrap}>
-        <Image
-          source={{ uri }}
-          style={styles.image}
-          resizeMode="cover"
-          onError={(error) => {
-            console.log(
-              "Image load error for book:",
-              item.id,
-              "URI:",
-              uri,
-              error
-            );
-          }}
-        />
-      </View>
-
-      <View style={styles.info}>
-        <Text style={styles.category} numberOfLines={1}>
-          {item.categoryName || "Khác"}
-        </Text>
-
-        {/* Title wrapped in fixed-height box so all titles align */}
-        <View style={styles.titleWrap}>
-          <Text style={styles.title} numberOfLines={2}>
-            {item.title}
-          </Text>
-        </View>
-
-        {/* Reviews section */}
-        <View style={styles.reviewsRow}>
-          {item.reviewCount && item.reviewCount > 0 ? (
-            <>
-              <Text style={styles.rating}>
-                ★{" "}
-                {Number.isFinite(item.averageRating)
-                  ? item.averageRating!.toFixed(1)
-                  : "0.0"}
-              </Text>
-              <Text style={styles.reviewCount}>({item.reviewCount})</Text>
-            </>
-          ) : (
-            <Text style={styles.noReviews}>Chưa có đánh giá</Text>
-          )}
-        </View>
-
-        <View style={styles.metaRow}>
-          <Text style={styles.price}>{formatPrice(item.price)}</Text>
-          <Text style={styles.stock}>Còn {item.stock}</Text>
-        </View>
-
-        <View style={styles.buyWrap}>
-          <BuyNowButton
-            onPress={async () => {
-              try {
-                const token = await AsyncStorage.getItem("auth_token");
-                if (!token) {
-                  // Điều hướng tới trang tài khoản/đăng nhập, kèm tham số để thêm giỏ sau đăng nhập
-                  router.push({
-                    pathname: "/account",
-                    params: { next: "add_to_cart", bookId: String(item.id) },
-                  });
-                  return;
-                }
-
-                await axiosInstance.post("/carts", {
-                  bookId: item.id,
-                  quantity: 1,
-                });
-                Alert.alert("Đã thêm vào giỏ", `Đã thêm \"${item.title}\"`);
-              } catch (err: any) {
-                const msg =
-                  err?.response?.data?.message ||
-                  err?.response?.data?.error ||
-                  err?.message ||
-                  "Không thể thêm vào giỏ";
-                Alert.alert("Lỗi", msg);
-              }
+    <>
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.8}
+        onPress={() => setShowBookDetail(true)}
+      >
+        <View style={styles.imageWrap}>
+          <Image
+            source={{ uri }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={(error) => {
+              console.log(
+                "Image load error for book:",
+                item.id,
+                "URI:",
+                uri,
+                error
+              );
             }}
           />
         </View>
-      </View>
-    </View>
+
+        <View style={styles.info}>
+          <Text style={styles.category} numberOfLines={1}>
+            {item.categoryName || "Khác"}
+          </Text>
+
+          {/* Title wrapped in fixed-height box so all titles align */}
+          <View style={styles.titleWrap}>
+            <Text style={styles.title} numberOfLines={2}>
+              {item.title}
+            </Text>
+          </View>
+
+          {/* Reviews section */}
+          <View style={styles.reviewsRow}>
+            {item.reviewCount && item.reviewCount > 0 ? (
+              <>
+                <Text style={styles.rating}>
+                  ★{" "}
+                  {Number.isFinite(item.averageRating)
+                    ? item.averageRating!.toFixed(1)
+                    : "0.0"}
+                </Text>
+                <Text style={styles.reviewCount}>({item.reviewCount})</Text>
+              </>
+            ) : (
+              <Text style={styles.noReviews}>Chưa có đánh giá</Text>
+            )}
+          </View>
+
+          <View style={styles.metaRow}>
+            <Text style={styles.price}>{formatPrice(item.price)}</Text>
+            <Text style={styles.stock}>Còn {item.stock}</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.buyWrap}
+            activeOpacity={1}
+            onPress={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <BuyNowButton
+              onPress={async () => {
+                try {
+                  const token = await AsyncStorage.getItem("auth_token");
+                  if (!token) {
+                    // Điều hướng tới trang tài khoản/đăng nhập, kèm tham số để thêm giỏ sau đăng nhập
+                    router.push({
+                      pathname: "/account",
+                      params: { next: "add_to_cart", bookId: String(item.id) },
+                    });
+                    return;
+                  }
+
+                  await axiosInstance.post("/carts", {
+                    bookId: item.id,
+                    quantity: 1,
+                  });
+                  Alert.alert("Đã thêm vào giỏ", `Đã thêm \"${item.title}\"`);
+                } catch (err: any) {
+                  const msg =
+                    err?.response?.data?.message ||
+                    err?.response?.data?.error ||
+                    err?.message ||
+                    "Không thể thêm vào giỏ";
+                  Alert.alert("Lỗi", msg);
+                }
+              }}
+            />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+
+      <BookDetail
+        visible={showBookDetail}
+        bookId={item.id}
+        onClose={() => setShowBookDetail(false)}
+      />
+    </>
   );
 };
 
