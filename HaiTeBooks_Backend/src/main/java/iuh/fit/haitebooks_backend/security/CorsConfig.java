@@ -1,4 +1,4 @@
-package iuh.fit.haitebooks_backend.config;
+package iuh.fit.haitebooks_backend.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

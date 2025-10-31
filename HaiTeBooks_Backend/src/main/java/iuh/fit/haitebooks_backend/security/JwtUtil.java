@@ -19,21 +19,12 @@ public class JwtUtil {
     private final Key key;
     private final long expirationMs;
 
-    public JwtUtil(@Value("${app.jwt.secret}") String secret,
-                   @Value("${app.jwt.expiration-ms}") long expirationMs) {
+    public JwtUtil(
+            @Value("${app.jwt.secret}") String secret,
+            @Value("${app.jwt.expiration-ms}") long expirationMs
+    ) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
-    }
-
-    @Autowired
-    public JwtUtil(Dotenv dotenv) {
-        String secret = dotenv.get("JWT_SECRET_KEY");
-        if (secret == null) {
-            throw new IllegalStateException("Missing JWT_SECRET_KEY in .env file");
-        }
-
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.expirationMs = Long.parseLong(dotenv.get("JWT_EXPIRATION_MS", "86400000"));
     }
 
     public String generateToken(String username, List<String> roles) {
@@ -41,8 +32,8 @@ public class JwtUtil {
         Date exp = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
-                .setSubject(username)
-                .setClaims(Map.of("roles", roles))
+                .setSubject(username) // ✅ giữ lại subject
+                .claim("roles", roles) // ✅ thêm roles đúng cách, không đè mất subject
                 .setIssuedAt(now)
                 .setExpiration(exp)
                 .signWith(key, SignatureAlgorithm.HS256)

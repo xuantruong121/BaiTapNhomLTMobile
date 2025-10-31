@@ -42,23 +42,42 @@ public class SecurityConfig {
         JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil, userDetailsService);
 
         http
-                // Cho phép CORS, tắt CSRF
-                .cors(Customizer.withDefaults())  // Cho phép @CrossOrigin hoạt động
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                // Stateless session (JWT)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Phân quyền
                 .authorizeHttpRequests(auth -> auth
+
+                        // ✅ Auth APIs (đăng nhập, đăng ký)
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // ✅ Public GET APIs (ai, sách, đánh giá)
                         .requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/books/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/ai/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/books/barcode/**").permitAll()
-                        .requestMatchers("/api/ai/**").permitAll()
+
+                        // ✅ Public Swagger / Docs
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                        .anyRequest().authenticated()
+
+                        // ✅ Admin-only routes
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/books/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/books/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/books/**").hasRole("ADMIN")
+                        // Chỉ admin mới xem danh sách tất cả user
+                        .requestMatchers("/api/users/all", "/api/users/{id}").hasRole("ADMIN")
+
+                        // ✅ Authenticated user routes (cart, order, payment, profile)
+                        .requestMatchers("/api/users/me/**").authenticated()
+                        .requestMatchers("/api/orders/**").authenticated()
+                        .requestMatchers("/api/payments/**").authenticated()
+                        .requestMatchers("/api/cart/**").authenticated()
+                        .requestMatchers("/api/reviews/**").authenticated()
+
+                        // ✅ Default: cấm hết
+                        .anyRequest().denyAll()
                 )
-                // Thêm filter JWT trước UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
