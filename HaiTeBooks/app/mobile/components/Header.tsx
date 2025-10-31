@@ -6,9 +6,8 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import ScanButton from "./headerbutton/ScanButton";
-
 import MenuButton from "./headerbutton/MenuButton";
+import ScanButton from "./headerbutton/ScanButton";
 import Search from "./headerbutton/Search";
 
 interface HeaderProps {}
@@ -23,6 +22,11 @@ const Header: React.FC<HeaderProps> = () => {
 
   const logoTop = (insets.top ?? 0) + (ROW_HEIGHT - LOGO_HEIGHT) / 2;
 
+  const handleSelectCategory = (category: string) => {
+    console.log("Selected category:", category);
+    // Có thể thêm logic filter books theo category ở đây
+  };
+
   return (
     <SafeAreaView style={[styles.container, { paddingTop: insets.top || 0 }]}>
       <View style={[styles.logoWrapper, { top: logoTop }]}>
@@ -33,7 +37,7 @@ const Header: React.FC<HeaderProps> = () => {
       </View>
 
       <View style={[styles.actionRow, { height: ROW_HEIGHT }]}>
-        <MenuButton onPress={() => console.log("Menu pressed")} />
+        <MenuButton onSelectCategory={handleSelectCategory} />
         <Search onSubmit={() => console.log("Search submit")} />
         <ScanButton onPress={() => console.log("Scan pressed from Header")} />
       </View>
