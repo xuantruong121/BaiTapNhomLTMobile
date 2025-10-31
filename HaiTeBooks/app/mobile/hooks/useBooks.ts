@@ -29,3 +29,5 @@ export const useBooks = () => {
 
   return { books, loading, error };
 };
+
+export default useBooks;

@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import axiosInstance from "../../config/axiosConfig";
 import BuyNowButton from "./BuyNowButton";
 
 type ApiBook = {
@@ -22,10 +23,15 @@ type ApiBook = {
   categoryName?: string;
 };
 
+type BookWithReviews = ApiBook & {
+  averageRating?: number;
+  reviewCount?: number;
+};
+
 const formatPrice = (v: number) =>
   new Intl.NumberFormat("vi-VN").format(v) + " đ";
 
-const Card: React.FC<{ item: ApiBook }> = ({ item }) => {
+const Card: React.FC<{ item: BookWithReviews }> = ({ item }) => {
   const uri =
     item.barcode || item.imageUrl || "https://via.placeholder.com/300x400";
   return (
@@ -46,6 +52,23 @@ const Card: React.FC<{ item: ApiBook }> = ({ item }) => {
           </Text>
         </View>
 
+        {/* Reviews section */}
+        <View style={styles.reviewsRow}>
+          {item.reviewCount && item.reviewCount > 0 ? (
+            <>
+              <Text style={styles.rating}>
+                ★{" "}
+                {Number.isFinite(item.averageRating)
+                  ? item.averageRating!.toFixed(1)
+                  : "0.0"}
+              </Text>
+              <Text style={styles.reviewCount}>({item.reviewCount})</Text>
+            </>
+          ) : (
+            <Text style={styles.noReviews}>Chưa có đánh giá</Text>
+          )}
+        </View>
+
         <View style={styles.metaRow}>
           <Text style={styles.price}>{formatPrice(item.price)}</Text>
           <Text style={styles.stock}>Còn {item.stock}</Text>
@@ -64,7 +87,7 @@ const Card: React.FC<{ item: ApiBook }> = ({ item }) => {
 };
 
 const ProductCard: React.FC = () => {
-  const [books, setBooks] = useState<ApiBook[]>([]);
+  const [books, setBooks] = useState<BookWithReviews[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,11 +97,97 @@ const ProductCard: React.FC = () => {
 
     const fetchBooks = async () => {
       try {
-        const resp = await axios.get<ApiBook[]>(
-          "http://192.168.100.156:8080/api/books",
-          { timeout: 10000, cancelToken: source.token }
+        // Fetch books
+        const booksResp = await axiosInstance.get<ApiBook[]>("/books", {
+          timeout: 10000,
+          cancelToken: source.token,
+        });
+
+        if (!mounted) return;
+
+        const booksData = booksResp.data || [];
+
+        // Fetch reviews for each book in parallel
+        const booksWithReviews = await Promise.all(
+          booksData.map(async (book) => {
+            try {
+              const reviewsResp = await axiosInstance.get<any>(
+                `/reviews/book/${book.id}`,
+                { timeout: 5000, cancelToken: source.token }
+              );
+
+              const data = reviewsResp.data;
+
+              // DEBUG: Xem dữ liệu reviews
+              console.log("=== REVIEWS DEBUG ===");
+              console.log("Book ID:", book.id);
+              console.log("Response data:", data);
+              console.log(
+                "Data type:",
+                Array.isArray(data) ? "Array" : typeof data
+              );
+              console.log("====================");
+
+              let reviewCount = 0;
+              let averageRating = 0;
+
+              if (Array.isArray(data)) {
+                // Trả về mảng reviews
+                reviewCount = data.length;
+                const sum = data.reduce((acc: number, r: any) => {
+                  const n = Number(r?.rating);
+                  return acc + (Number.isFinite(n) ? n : 0);
+                }, 0);
+                averageRating = reviewCount > 0 ? sum / reviewCount : 0;
+              } else if (data && typeof data === "object") {
+                // Trả về object thống kê
+                const count =
+                  data.reviewCount ?? data.count ?? data.totalReviews ?? 0;
+                const avg =
+                  data.averageRating ??
+                  data.avgRating ??
+                  data.ratingAverage ??
+                  data.average ??
+                  0;
+
+                reviewCount = Number(count) || 0;
+                averageRating = Number(avg) || 0;
+              }
+
+              // DEBUG: Kết quả sau khi xử lý
+              console.log(
+                "Book ID:",
+                book.id,
+                "| ReviewCount:",
+                reviewCount,
+                "| AverageRating:",
+                averageRating
+              );
+
+              return {
+                ...book,
+                averageRating,
+                reviewCount,
+              };
+            } catch (err) {
+              // DEBUG: Lỗi khi fetch reviews
+              console.log(
+                "ERROR fetching reviews for book ID:",
+                book.id,
+                "| Error:",
+                err
+              );
+
+              return {
+                ...book,
+                averageRating: 0,
+                reviewCount: 0,
+              };
+            }
+          })
         );
-        if (mounted) setBooks(resp.data || []);
+
+        if (mounted) setBooks(booksWithReviews);
       } catch (err: any) {
         if (axios.isCancel(err)) return;
         if (mounted)
@@ -101,7 +210,7 @@ const ProductCard: React.FC = () => {
 
   // group books by categoryName
   const sections = useMemo(() => {
-    const map = books.reduce<Record<string, ApiBook[]>>((acc, b) => {
+    const map = books.reduce<Record<string, BookWithReviews[]>>((acc, b) => {
       const key =
         b.categoryName?.trim() && b.categoryName!.trim().length > 0
           ? b.categoryName!
@@ -181,7 +290,7 @@ const styles = StyleSheet.create({
   info: {
     padding: 12,
     // make info area consistent so elements align across cards
-    minHeight: 120,
+    minHeight: 140,
     justifyContent: "flex-start",
   },
   category: {
@@ -199,6 +308,27 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#111827",
     lineHeight: 18,
+  },
+  reviewsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+    minHeight: 18,
+  },
+  rating: {
+    fontSize: 12,
+    color: "#F59E0B",
+    fontWeight: "600",
+    marginRight: 4,
+  },
+  reviewCount: {
+    fontSize: 11,
+    color: "#6B7280",
+  },
+  noReviews: {
+    fontSize: 11,
+    color: "#9CA3AF",
+    fontStyle: "italic",
   },
   // meta row holds price and stock horizontally aligned
   metaRow: {
