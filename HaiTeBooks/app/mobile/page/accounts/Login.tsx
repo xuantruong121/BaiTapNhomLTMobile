@@ -69,7 +69,12 @@ const Login: React.FC<LoginProps> = ({
         password: "", // Không lưu password
         email: userData?.email || "",
         full_name: userData?.fullName || userData?.full_name || "",
-        address: userData?.address || "",
+        phone:
+          userData?.phone ||
+          userData?.phoneNumber ||
+          userData?.sdt ||
+          "",
+        address: userData?.address || userData?.diaChi || "",
         role_id: userData?.role || userData?.role_id || "user",
       };
 

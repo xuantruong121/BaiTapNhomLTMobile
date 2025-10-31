@@ -32,21 +32,21 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
-            name="mobile/page/cart/cart"
+            name="mobile/page/carts/Cart"
             options={{
               headerShown: false,
               animation: "none",
             }}
           />
           <Stack.Screen
-            name="mobile/page/suggestions/suggestions"
+            name="mobile/page/suggestions/Suggestion"
             options={{
               headerShown: false,
               animation: "none",
             }}
           />
           <Stack.Screen
-            name="mobile/page/notifications/notifications"
+            name="mobile/page/notifications/Notification"
             options={{
               headerShown: false,
               animation: "none",

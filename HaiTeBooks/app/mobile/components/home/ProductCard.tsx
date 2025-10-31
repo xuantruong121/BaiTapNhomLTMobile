@@ -36,12 +36,25 @@ const formatPrice = (v: number) =>
 
 const Card: React.FC<{ item: BookWithReviews }> = ({ item }) => {
   const router = useRouter();
-  const uri =
-    item.barcode || item.imageUrl || "https://via.placeholder.com/300x400";
+  const uri = item.imageUrl || "https://via.placeholder.com/300x400";
+
   return (
     <View style={styles.card}>
       <View style={styles.imageWrap}>
-        <Image source={{ uri }} style={styles.image} resizeMode="cover" />
+        <Image
+          source={{ uri }}
+          style={styles.image}
+          resizeMode="cover"
+          onError={(error) => {
+            console.log(
+              "Image load error for book:",
+              item.id,
+              "URI:",
+              uri,
+              error
+            );
+          }}
+        />
       </View>
 
       <View style={styles.info}>

@@ -3,20 +3,20 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const NotificationsScreen: React.FC = () => {
+const Suggestion: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Thông báo</Text>
+        <Text style={styles.headerTitle}>Gợi ý</Text>
       </View>
 
       <View style={styles.content}>
-        <Ionicons name="notifications" size={64} color="#C92127" />
-        <Text style={styles.title}>Trang Thông báo</Text>
-        <Text style={styles.subtitle}>Đây là trang thông báo của bạn</Text>
+        <Ionicons name="star" size={64} color="#C92127" />
+        <Text style={styles.title}>Trang Gợi ý</Text>
+        <Text style={styles.subtitle}>Đây là trang gợi ý sản phẩm cho bạn</Text>
         <Text style={styles.description}>
-          Nội dung trang này sẽ hiển thị các thông báo về đơn hàng, khuyến mãi
-          và các cập nhật quan trọng khác.
+          Nội dung trang này sẽ hiển thị các sản phẩm được đề xuất dựa trên sở
+          thích và lịch sử mua hàng của bạn.
         </Text>
       </View>
     </SafeAreaView>
@@ -35,9 +35,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   headerTitle: {
-    color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "800",
+    color: "#FFFFFF",
   },
   content: {
     flex: 1,
@@ -65,4 +65,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NotificationsScreen;
+export default Suggestion;

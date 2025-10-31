@@ -43,7 +43,7 @@ const initialItems: CartItem[] = [
   },
 ];
 
-const CartScreen: React.FC = () => {
+const Cart: React.FC = () => {
   const [items, setItems] = useState<CartItem[]>(initialItems);
 
   const allChecked = useMemo(
@@ -200,8 +200,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 12,
   },
-  headerTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "800" },
-
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#FFFFFF",
+  },
   selectAllRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -302,4 +305,4 @@ const styles = StyleSheet.create({
   emptyText: { color: "#6B7280" },
 });
 
-export default CartScreen;
+export default Cart;

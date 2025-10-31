@@ -39,16 +39,16 @@ const BotTabs: React.FC<BotTabsProps> = ({
         router.replace("/");
       }
     } else if (tab === "cart") {
-      if (pathname !== "/mobile/page/cart/cart") {
-        router.replace("/mobile/page/cart/cart");
+      if (pathname !== "/mobile/page/carts/Cart") {
+        router.replace("/mobile/page/carts/Cart");
       }
     } else if (tab === "suggestions") {
-      if (pathname !== "/mobile/page/suggestions/suggestions") {
-        router.replace("/mobile/page/suggestions/suggestions");
+      if (pathname !== "/mobile/page/suggestions/Suggestion") {
+        router.replace("/mobile/page/suggestions/Suggestion");
       }
     } else if (tab === "notifications") {
-      if (pathname !== "/mobile/page/notifications/notifications") {
-        router.replace("/mobile/page/notifications/notifications");
+      if (pathname !== "/mobile/page/notifications/Notification") {
+        router.replace("/mobile/page/notifications/Notification");
       }
     }
 
@@ -63,11 +63,11 @@ const BotTabs: React.FC<BotTabsProps> = ({
       setCurrentTab("home");
     } else if (pathname === "/account") {
       setCurrentTab("account");
-    } else if (pathname === "/mobile/page/cart/cart") {
+    } else if (pathname === "/cart" || pathname === "/mobile/page/carts/Cart") {
       setCurrentTab("cart");
-    } else if (pathname === "/mobile/page/suggestions/suggestions") {
+    } else if (pathname === "/mobile/page/suggestions/Suggestion") {
       setCurrentTab("suggestions");
-    } else if (pathname === "/mobile/page/notifications/notifications") {
+    } else if (pathname === "/mobile/page/notifications/Notification") {
       setCurrentTab("notifications");
     }
   }, [pathname]);

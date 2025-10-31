@@ -16,7 +16,7 @@ const CartTab: React.FC<CartTabProps> = ({ isActive = false }) => {
     <TouchableOpacity
       activeOpacity={0.7}
       style={styles.container}
-      onPress={() => router.push("/mobile/page/cart/cart")}
+      onPress={() => router.push("/mobile/page/carts/Cart")}
     >
       <View style={styles.iconContainer}>
         <Ionicons

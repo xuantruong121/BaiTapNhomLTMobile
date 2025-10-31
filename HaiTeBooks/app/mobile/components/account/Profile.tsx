@@ -38,9 +38,33 @@ const Profile: React.FC<ProfileProps> = ({ user, onBack, onLogout }) => {
           "User API Response:",
           JSON.stringify(response.data, null, 2)
         );
+        console.log("All API response keys:", Object.keys(response.data || {}));
+        console.log("API fields check:", {
+          phone: response.data?.phone,
+          phoneNumber: response.data?.phoneNumber,
+          sdt: response.data?.sdt,
+          address: response.data?.address,
+          diaChi: response.data?.diaChi,
+          fullAddress: response.data?.fullAddress,
+        });
+        console.log("User prop address:", user.address);
 
-        // Map dữ liệu từ UserResponse: id, username, email, fullName, phone
+        // Map dữ liệu từ UserResponse: id, username, email, fullName, phone, address
         const apiUser = response.data;
+
+        // Debug: Kiểm tra address từ API
+        const apiAddress =
+          apiUser?.address || apiUser?.diaChi || apiUser?.fullAddress || "";
+
+        console.log("Address mapping:", {
+          "apiUser.address": apiUser?.address,
+          "apiUser.diaChi": apiUser?.diaChi,
+          "apiUser.fullAddress": apiUser?.fullAddress,
+          "final apiAddress": apiAddress,
+          "user.address (prop)": user.address,
+          "final address": apiAddress || user.address || "",
+        });
+
         const mappedUser: User = {
           id: apiUser?.id || user.id,
           username: apiUser?.username || user.username || "",
@@ -48,11 +72,18 @@ const Profile: React.FC<ProfileProps> = ({ user, onBack, onLogout }) => {
           email: apiUser?.email || user.email || "",
           full_name:
             apiUser?.fullName || apiUser?.full_name || user.full_name || "",
-          address: user.address || "", // Backend không trả về address, giữ từ user prop
+          phone:
+            apiUser?.phone ||
+            apiUser?.phoneNumber ||
+            apiUser?.sdt ||
+            user.phone ||
+            "",
+          address: apiAddress || user.address || "", // Ưu tiên API, sau đó user prop
           role_id: user.role_id || "user", // Backend không trả về role_id, giữ từ user prop
         };
 
         console.log("Mapped User Data:", JSON.stringify(mappedUser, null, 2));
+        console.log("Final address value:", mappedUser.address);
 
         setUserData(mappedUser);
       } catch (err: any) {
@@ -98,6 +129,16 @@ const Profile: React.FC<ProfileProps> = ({ user, onBack, onLogout }) => {
 
   const displayUser = userData || user;
 
+  // Debug: Kiểm tra giá trị address khi hiển thị
+  useEffect(() => {
+    console.log("Display User Debug:", {
+      "userData?.address": userData?.address,
+      "user.address": user.address,
+      "displayUser.address": displayUser.address,
+      "has userData": !!userData,
+    });
+  }, [userData, user, displayUser]);
+
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top }]}>
@@ -140,6 +181,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onBack, onLogout }) => {
             />
             <InfoRow label="Họ và tên" value={displayUser.full_name || "-"} />
             <InfoRow label="Email" value={displayUser.email || "-"} />
+            <InfoRow label="Số điện thoại" value={displayUser.phone || "-"} />
             <InfoRow label="Địa chỉ" value={displayUser.address || "-"} />
           </View>
         </View>
