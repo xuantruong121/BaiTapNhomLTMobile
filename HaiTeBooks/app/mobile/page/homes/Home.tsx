@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import BannerSale from "../../components/home/BannerSale";
 import ProductCard from "../../components/home/ProductCard";
 
 type ApiBook = {
@@ -80,6 +81,7 @@ const Home: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
+      <BannerSale />
       <View style={styles.section}>
         <ProductCard />
       </View>
