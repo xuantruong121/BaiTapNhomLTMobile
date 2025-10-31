@@ -25,6 +25,11 @@ const Profile: React.FC<ProfileProps> = ({ user, onBack, onLogout }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Debug: Kiểm tra khi component mount
+  useEffect(() => {
+    console.log("Profile component mounted with user:", user?.id, user?.username);
+  }, []);
+
   useEffect(() => {
     const fetchUserData = async () => {
       setLoading(true);
@@ -102,8 +107,24 @@ const Profile: React.FC<ProfileProps> = ({ user, onBack, onLogout }) => {
       }
     };
 
+    // Fetch dữ liệu khi component mount hoặc user.id thay đổi
     fetchUserData();
-  }, []);
+  }, [user?.id]); // Fetch lại khi user.id thay đổi
+
+  // Tính toán displayUser trước khi sử dụng (đảm bảo hooks được gọi cùng thứ tự)
+  const displayUser = userData || user;
+
+  // Debug: Kiểm tra giá trị address khi hiển thị
+  useEffect(() => {
+    if (!loading && displayUser) {
+      console.log("Display User Debug:", {
+        "userData?.address": userData?.address,
+        "user.address": user.address,
+        "displayUser.address": displayUser.address,
+        "has userData": !!userData,
+      });
+    }
+  }, [userData, user, loading]); // Bỏ displayUser khỏi dependency vì nó được tính từ userData và user
 
   if (loading) {
     return (
@@ -126,18 +147,6 @@ const Profile: React.FC<ProfileProps> = ({ user, onBack, onLogout }) => {
       </View>
     );
   }
-
-  const displayUser = userData || user;
-
-  // Debug: Kiểm tra giá trị address khi hiển thị
-  useEffect(() => {
-    console.log("Display User Debug:", {
-      "userData?.address": userData?.address,
-      "user.address": user.address,
-      "displayUser.address": displayUser.address,
-      "has userData": !!userData,
-    });
-  }, [userData, user, displayUser]);
 
   return (
     <View style={styles.container}>

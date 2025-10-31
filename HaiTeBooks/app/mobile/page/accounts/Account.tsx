@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
@@ -18,6 +18,7 @@ import Register from "./Register";
 import RePass from "./RePass";
 
 const Account: React.FC = () => {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [showRegister, setShowRegister] = useState(false);
   const [showRePass, setShowRePass] = useState(false);
@@ -75,6 +76,8 @@ const Account: React.FC = () => {
               });
             } catch {}
           }
+          // Chuyển sang trang chủ sau khi đăng nhập thành công
+          router.replace("/");
         }}
         onRegisterPress={() => setShowRegister(true)}
         onForgotPress={() => setShowRePass(true)}
@@ -159,7 +162,10 @@ const Account: React.FC = () => {
             icon="person"
             iconColor="#C92127"
             label="Hồ sơ cá nhân"
-            onPress={() => setShowProfile(true)} // Thêm onPress
+            onPress={() => {
+              console.log("Profile button clicked");
+              setShowProfile(true);
+            }}
           />
           <MenuItem
             icon="settings"
@@ -227,11 +233,17 @@ const MenuItem: React.FC<MenuItemProps> = ({
     );
   };
 
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    }
+  };
+
   return (
     <TouchableOpacity
       style={styles.menuItem}
       activeOpacity={0.7}
-      onPress={onPress} // Thêm onPress handler
+      onPress={handlePress}
     >
       <View style={styles.menuLeft}>
         {renderIcon()}
