@@ -1,5 +1,5 @@
 import { usePathname, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AccountTab from "./tabs/AccountTab";
@@ -29,9 +29,6 @@ const BotTabs: React.FC<BotTabsProps> = ({
   const pathname = usePathname();
 
   const handleTabPress = (tab: TabType) => {
-    setCurrentTab(tab);
-    onTabPress?.(tab);
-
     // Chỉ navigate khi route hiện tại khác với route mục tiêu
     if (tab === "account") {
       if (pathname !== "/account") {
@@ -41,9 +38,39 @@ const BotTabs: React.FC<BotTabsProps> = ({
       if (pathname !== "/") {
         router.replace("/");
       }
+    } else if (tab === "cart") {
+      if (pathname !== "/mobile/page/cart/cart") {
+        router.replace("/mobile/page/cart/cart");
+      }
+    } else if (tab === "suggestions") {
+      if (pathname !== "/mobile/page/suggestions/suggestions") {
+        router.replace("/mobile/page/suggestions/suggestions");
+      }
+    } else if (tab === "notifications") {
+      if (pathname !== "/mobile/page/notifications/notifications") {
+        router.replace("/mobile/page/notifications/notifications");
+      }
     }
-    // Thêm logic cho các tab khác nếu cần
+
+    // Chỉ update state sau khi navigate để tránh double render
+    // setCurrentTab sẽ được sync bởi useEffect
+    onTabPress?.(tab);
   };
+
+  // Sync active tab with current pathname when navigating programmatically
+  useEffect(() => {
+    if (pathname === "/") {
+      setCurrentTab("home");
+    } else if (pathname === "/account") {
+      setCurrentTab("account");
+    } else if (pathname === "/mobile/page/cart/cart") {
+      setCurrentTab("cart");
+    } else if (pathname === "/mobile/page/suggestions/suggestions") {
+      setCurrentTab("suggestions");
+    } else if (pathname === "/mobile/page/notifications/notifications") {
+      setCurrentTab("notifications");
+    }
+  }, [pathname]);
 
   return (
     <SafeAreaView edges={["left", "right"]} style={styles.container}>

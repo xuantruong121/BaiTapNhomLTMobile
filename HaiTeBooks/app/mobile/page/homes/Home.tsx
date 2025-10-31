@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
-import ProductCard from "../components/home/ProductCard";
+import ProductCard from "../../components/home/ProductCard";
 
 type ApiBook = {
   id: number;

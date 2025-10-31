@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -7,26 +9,52 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Profile from "../../components/account/Profile"; // Thêm import
+import axiosInstance, { setAuthToken } from "../../config/axiosConfig";
+import { User } from "../../types/user"; // Thêm import
 import Login from "./Login";
 import Register from "./Register";
 import RePass from "./RePass";
 
-type User = {
-  username: string;
-  password: string;
-  email: string;
-  full_name: string;
-  address: string;
-  role_id: "user" | "admin";
-};
-
 const Account: React.FC = () => {
-  const insets = useSafeAreaInsets();
-
   const [user, setUser] = useState<User | null>(null);
   const [showRegister, setShowRegister] = useState(false);
   const [showRePass, setShowRePass] = useState(false);
+  const [showProfile, setShowProfile] = useState(false); // Thêm state
+  const params = useLocalSearchParams<{ next?: string; bookId?: string }>();
+
+  // Rehydrate session when Account mounts
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const [token, savedUser] = await Promise.all([
+          AsyncStorage.getItem("auth_token"),
+          AsyncStorage.getItem("auth_user"),
+        ]);
+        if (token) {
+          setAuthToken(token);
+        }
+        if (savedUser) {
+          const parsed: User = JSON.parse(savedUser);
+          setUser(parsed);
+        }
+      } catch {}
+    };
+    restoreSession();
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await Promise.all([
+        AsyncStorage.removeItem("auth_token"),
+        AsyncStorage.removeItem("auth_user"),
+      ]);
+    } catch {}
+    setAuthToken(undefined);
+    setUser(null);
+    setShowProfile(false);
+  }, []);
 
   if (!user) {
     if (showRegister) {
@@ -37,9 +65,30 @@ const Account: React.FC = () => {
     }
     return (
       <Login
-        onLoginSuccess={(userData: User) => setUser(userData)}
+        onLoginSuccess={async (userData: User) => {
+          setUser(userData);
+          if (params?.next === "add_to_cart" && params?.bookId) {
+            try {
+              await axiosInstance.post("/carts", {
+                bookId: Number(params.bookId),
+                quantity: 1,
+              });
+            } catch {}
+          }
+        }}
         onRegisterPress={() => setShowRegister(true)}
         onForgotPress={() => setShowRePass(true)}
+      />
+    );
+  }
+
+  // Nếu đang hiển thị Profile
+  if (showProfile) {
+    return (
+      <Profile
+        user={user}
+        onBack={() => setShowProfile(false)}
+        onLogout={handleLogout}
       />
     );
   }
@@ -53,23 +102,12 @@ const Account: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
         <Text style={styles.headerTitle}>Tài khoản</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.warningBanner}>
-          <Ionicons name="warning" size={20} color="#C92127" />
-          <View style={styles.warningText}>
-            <Text style={styles.warningMain}>
-              Bạn vui lòng cập nhật thông tin tài khoản.
-            </Text>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Text style={styles.warningLink}>Cập nhật thông tin ngay</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
         <TouchableOpacity style={styles.section} activeOpacity={0.7}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Đơn hàng của tôi</Text>
@@ -117,7 +155,12 @@ const Account: React.FC = () => {
           </View>
         </TouchableOpacity>
         <View style={styles.menuSection}>
-          <MenuItem icon="person" iconColor="#C92127" label="Hồ sơ cá nhân" />
+          <MenuItem
+            icon="person"
+            iconColor="#C92127"
+            label="Hồ sơ cá nhân"
+            onPress={() => setShowProfile(true)} // Thêm onPress
+          />
           <MenuItem
             icon="settings"
             iconColor="#C92127"
@@ -142,16 +185,8 @@ const Account: React.FC = () => {
             iconType="filled-circle"
           />
         </View>
-
-        <TouchableOpacity
-          style={styles.logoutButton}
-          activeOpacity={0.8}
-          onPress={() => setUser(null)}
-        >
-          <Text style={styles.logoutText}>Đăng xuất</Text>
-        </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -161,6 +196,7 @@ interface MenuItemProps {
   label: string;
   badge?: number;
   iconType?: "outline" | "filled-circle" | "custom-circle";
+  onPress?: () => void; // Thêm onPress prop
 }
 
 const MenuItem: React.FC<MenuItemProps> = ({
@@ -169,6 +205,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
   label,
   badge,
   iconType = "outline",
+  onPress, // Thêm onPress
 }) => {
   const renderIcon = () => {
     if (iconType === "filled-circle") {
@@ -191,7 +228,11 @@ const MenuItem: React.FC<MenuItemProps> = ({
   };
 
   return (
-    <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.menuItem}
+      activeOpacity={0.7}
+      onPress={onPress} // Thêm onPress handler
+    >
       <View style={styles.menuLeft}>
         {renderIcon()}
         <Text style={styles.menuLabel}>{label}</Text>
@@ -213,11 +254,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: "#C92127",
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingVertical: 12,
   },
   headerTitle: {
     fontSize: 18,
@@ -347,24 +386,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 10,
     fontWeight: "700",
-  },
-  logoutButton: {
-    width: "50%",
-    alignSelf: "center",
-    backgroundColor: "#C92127",
-    borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoutText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "800",
   },
 });
 

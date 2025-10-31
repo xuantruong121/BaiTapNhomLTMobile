@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import Home from "../app/mobile/page/Home";
+import Home from "./mobile/page/homes/Home";
 
 export default function Index() {
   return (

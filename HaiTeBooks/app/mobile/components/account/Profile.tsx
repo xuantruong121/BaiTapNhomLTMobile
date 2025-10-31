@@ -1,0 +1,279 @@
+import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import axiosInstance from "../../config/axiosConfig";
+import { User } from "../../types/user";
+import LogoutButton from "./LogoutButton";
+
+interface ProfileProps {
+  user: User; // Nhận user object (có id)
+  onBack?: () => void;
+  onLogout?: () => void;
+}
+
+const Profile: React.FC<ProfileProps> = ({ user, onBack, onLogout }) => {
+  const insets = useSafeAreaInsets();
+  const [userData, setUserData] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Gọi API /users/me
+        const response = await axiosInstance.get<any>("/users/me");
+
+        // Debug: Xem response từ API
+        console.log(
+          "User API Response:",
+          JSON.stringify(response.data, null, 2)
+        );
+
+        // Map dữ liệu từ UserResponse: id, username, email, fullName, phone
+        const apiUser = response.data;
+        const mappedUser: User = {
+          id: apiUser?.id || user.id,
+          username: apiUser?.username || user.username || "",
+          password: "", // Không lưu password
+          email: apiUser?.email || user.email || "",
+          full_name:
+            apiUser?.fullName || apiUser?.full_name || user.full_name || "",
+          address: user.address || "", // Backend không trả về address, giữ từ user prop
+          role_id: user.role_id || "user", // Backend không trả về role_id, giữ từ user prop
+        };
+
+        console.log("Mapped User Data:", JSON.stringify(mappedUser, null, 2));
+
+        setUserData(mappedUser);
+      } catch (err: any) {
+        console.error("Error fetching user data:", err);
+        setError(
+          err?.response?.status === 403
+            ? "Request failed with status code 403"
+            : err?.response?.data?.message ||
+                err?.message ||
+                "Không thể tải thông tin người dùng"
+        );
+        // Fallback: dùng thông tin từ user prop nếu API fail
+        setUserData(user);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.header, { paddingTop: insets.top }]}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={onBack}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Hồ sơ cá nhân</Text>
+          <View style={styles.backButtonPlaceholder} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#C92127" />
+          <Text style={styles.loadingText}>Đang tải thông tin...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  const displayUser = userData || user;
+
+  return (
+    <View style={styles.container}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={onBack}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Hồ sơ cá nhân</Text>
+        <View style={styles.backButtonPlaceholder} />
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>
+              {error} - Đang hiển thị thông tin từ phiên đăng nhập
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.profileCard}>
+          <View style={styles.avatarSection}>
+            <View style={styles.avatarContainer}>
+              <Ionicons name="person" size={48} color="#C92127" />
+            </View>
+            <Text style={styles.usernameText}>{displayUser.username}</Text>
+          </View>
+
+          <View style={styles.infoSection}>
+            <InfoRow
+              label="Tên đăng nhập"
+              value={displayUser.username || "-"}
+            />
+            <InfoRow label="Họ và tên" value={displayUser.full_name || "-"} />
+            <InfoRow label="Email" value={displayUser.email || "-"} />
+            <InfoRow label="Địa chỉ" value={displayUser.address || "-"} />
+          </View>
+        </View>
+
+        {/* Logout button */}
+        {onLogout ? <LogoutButton onPress={onLogout} /> : null}
+      </ScrollView>
+    </View>
+  );
+};
+
+interface InfoRowProps {
+  label: string;
+  value: string;
+}
+
+const InfoRow: React.FC<InfoRowProps> = ({ label, value }) => {
+  return (
+    <View style={styles.infoRow}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#C92127",
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButtonPlaceholder: {
+    width: 40,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    textAlign: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: "#6B7280",
+  },
+  errorContainer: {
+    backgroundColor: "#FEE2E2",
+    borderWidth: 1,
+    borderColor: "#EF4444",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 12,
+    color: "#EF4444",
+    textAlign: "center",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  profileCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  avatarSection: {
+    alignItems: "center",
+    marginBottom: 24,
+    paddingBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
+  avatarContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#F3F4F6",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: "#C92127",
+  },
+  usernameText: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  roleText: {
+    fontSize: 14,
+    color: "#6B7280",
+  },
+  infoSection: {
+    gap: 16,
+  },
+  infoRow: {
+    gap: 6,
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: "#6B7280",
+    fontWeight: "600",
+  },
+  infoValue: {
+    fontSize: 15,
+    color: "#111827",
+    fontWeight: "600",
+  },
+});
+
+export default Profile;

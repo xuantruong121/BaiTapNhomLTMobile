@@ -13,6 +13,8 @@ export default function RootLayout() {
             header: () => <Header />,
             animation: "none",
             animationTypeForReplace: "pop",
+            animationDuration: 0,
+            presentation: "card",
           }}
         >
           <Stack.Screen
@@ -24,6 +26,27 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="account/register"
+            options={{
+              headerShown: false,
+              animation: "none",
+            }}
+          />
+          <Stack.Screen
+            name="mobile/page/cart/cart"
+            options={{
+              headerShown: false,
+              animation: "none",
+            }}
+          />
+          <Stack.Screen
+            name="mobile/page/suggestions/suggestions"
+            options={{
+              headerShown: false,
+              animation: "none",
+            }}
+          />
+          <Stack.Screen
+            name="mobile/page/notifications/notifications"
             options={{
               headerShown: false,
               animation: "none",

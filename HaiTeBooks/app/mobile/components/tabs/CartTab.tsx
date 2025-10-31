@@ -1,33 +1,39 @@
-import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface CartTabProps {
   isActive?: boolean;
 }
 
 const CartTab: React.FC<CartTabProps> = ({ isActive = false }) => {
-  const iconColor = isActive ? '#C92127' : '#999';
-  const textColor = isActive ? '#C92127' : '#999';
+  const router = useRouter();
+  const iconColor = isActive ? "#C92127" : "#999";
+  const textColor = isActive ? "#C92127" : "#999";
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity
+      activeOpacity={0.7}
+      style={styles.container}
+      onPress={() => router.push("/mobile/page/cart/cart")}
+    >
       <View style={styles.iconContainer}>
-        <Ionicons 
-          name={isActive ? "cart" : "cart-outline"} 
-          size={25} 
-          color={iconColor} 
+        <Ionicons
+          name={isActive ? "cart" : "cart-outline"}
+          size={25}
+          color={iconColor}
         />
       </View>
       <Text style={[styles.text, { color: textColor }]}>Giỏ hàng</Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     flex: 1,
   },
   iconContainer: {
@@ -35,7 +41,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
 

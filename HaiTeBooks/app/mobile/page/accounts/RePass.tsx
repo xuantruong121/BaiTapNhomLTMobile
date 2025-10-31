@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -15,15 +16,34 @@ type Method = "sms" | "zalo";
 
 const RePass: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [identifier, setIdentifier] = useState("");
   const [method, setMethod] = useState<Method>("sms");
 
   const isValid = identifier.trim().length > 0;
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/account");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={[styles.headerRed, { paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>Quên mật khẩu</Text>
+        <View style={styles.headerContent}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleBack}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Quên mật khẩu</Text>
+          <View style={styles.backButtonPlaceholder} />
+        </View>
       </View>
 
       <KeyboardAvoidingView
@@ -98,16 +118,40 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   headerRed: {
     backgroundColor: "#C92127",
-    alignItems: "center",
-    justifyContent: "center",
     paddingBottom: 12,
   },
-  headerTitle: { fontSize: 18, fontWeight: "800", color: "#FFFFFF" },
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButtonPlaceholder: {
+    width: 40,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    flex: 1,
+    textAlign: "center",
+  },
   keyboardView: { flex: 1 },
   inner: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
 
   form: { marginTop: 4 },
-  label: { fontSize: 13, color: "#374151", fontWeight: "600", marginBottom: 6 },
+  label: {
+    fontSize: 13,
+    color: "#374151",
+    fontWeight: "600",
+    marginBottom: 6,
+  },
   input: {
     borderWidth: 1,
     borderColor: "#E5E7EB",

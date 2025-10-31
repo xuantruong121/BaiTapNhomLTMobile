@@ -1,6 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -10,15 +13,8 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-type User = {
-  username: string;
-  password: string;
-  email: string;
-  full_name: string;
-  address: string;
-  role_id: "user" | "admin";
-};
+import axiosInstance, { setAuthToken } from "../../config/axiosConfig";
+import { User } from "../../types/user";
 
 interface LoginProps {
   onLoginSuccess?: (user: User) => void;
@@ -35,21 +31,67 @@ const Login: React.FC<LoginProps> = ({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const isValid = username.trim().length > 0 && password.trim().length > 0;
 
-  const handleLogin = () => {
-    if (!isValid) return;
+  const handleLogin = async () => {
+    if (!isValid || loading) return;
 
-    const mockUser: User = {
-      username,
-      password,
-      email: `${username}@example.com`,
-      full_name: username,
-      address: "",
-      role_id: "user",
-    };
+    setLoading(true);
+    setError(null);
 
-    onLoginSuccess?.(mockUser);
+    try {
+      const loginData = {
+        username,
+        password,
+      };
+
+      const response = await axiosInstance.post("/auth/login", loginData);
+
+      // Lấy token và cấu hình header Authorization
+      const token = response.data?.token;
+      if (token) {
+        setAuthToken(token);
+        try {
+          await AsyncStorage.setItem("auth_token", token);
+        } catch {}
+      }
+
+      // Nếu đăng nhập thành công, response có thể chứa user data hoặc token
+      const userData = response.data?.user || response.data;
+
+      // Tạo User object từ response - xử lý nhiều format
+      const user: User = {
+        id: userData?.id || userData?.userId || undefined,
+        username: userData?.username || username,
+        password: "", // Không lưu password
+        email: userData?.email || "",
+        full_name: userData?.fullName || userData?.full_name || "",
+        address: userData?.address || "",
+        role_id: userData?.role || userData?.role_id || "user",
+      };
+
+      console.log("Mapped User from Login:", JSON.stringify(user, null, 2));
+
+      // Persist user for session restore
+      try {
+        await AsyncStorage.setItem("auth_user", JSON.stringify(user));
+      } catch {}
+
+      onLoginSuccess?.(user);
+    } catch (err: any) {
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập và mật khẩu!";
+      setError(errorMessage);
+      Alert.alert("Lỗi đăng nhập", errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -79,6 +121,7 @@ const Login: React.FC<LoginProps> = ({
               keyboardType="default"
               autoCapitalize="none"
               style={styles.input}
+              editable={!loading}
             />
             <Text style={[styles.label, { marginTop: 14 }]}>Mật khẩu</Text>
             <View style={styles.passwordInputContainer}>
@@ -89,11 +132,13 @@ const Login: React.FC<LoginProps> = ({
                 placeholderTextColor="#9CA3AF"
                 secureTextEntry={!showPassword}
                 style={styles.passwordInput}
+                editable={!loading}
               />
               <TouchableOpacity
                 style={styles.eyeIconContainer}
                 activeOpacity={0.7}
                 onPress={() => setShowPassword(!showPassword)}
+                disabled={loading}
               >
                 <Ionicons
                   name={showPassword ? "eye-outline" : "eye-off-outline"}
@@ -103,6 +148,8 @@ const Login: React.FC<LoginProps> = ({
               </TouchableOpacity>
             </View>
 
+            {error && <Text style={styles.errorText}>{error}</Text>}
+
             <View
               style={{
                 flexDirection: "row",
@@ -110,23 +157,37 @@ const Login: React.FC<LoginProps> = ({
                 justifyContent: "flex-end",
               }}
             >
-              <TouchableOpacity activeOpacity={0.7} onPress={onForgotPress}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={onForgotPress}
+                disabled={loading}
+              >
                 <Text style={styles.forgot}>Quên mật khẩu?</Text>
               </TouchableOpacity>
             </View>
 
             <View style={{ marginTop: 12 }}></View>
             <TouchableOpacity
-              style={[styles.loginBtn, !isValid && styles.loginBtnDisabled]}
-              disabled={!isValid}
+              style={[
+                styles.loginBtn,
+                (!isValid || loading) && styles.loginBtnDisabled,
+              ]}
+              disabled={!isValid || loading}
               activeOpacity={0.8}
               onPress={handleLogin}
             >
-              <Text
-                style={[styles.loginText, !isValid && styles.loginTextDisabled]}
-              >
-                Đăng nhập
-              </Text>
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text
+                  style={[
+                    styles.loginText,
+                    (!isValid || loading) && styles.loginTextDisabled,
+                  ]}
+                >
+                  Đăng nhập
+                </Text>
+              )}
             </TouchableOpacity>
             <View style={styles.orRow}>
               <View style={styles.divider} />
@@ -279,6 +340,13 @@ const styles = StyleSheet.create({
   },
   footerText: { color: "#6B7280", marginRight: 6 },
   linkText: { color: "#C92127", fontWeight: "800" },
+  errorText: {
+    fontSize: 12,
+    color: "#EF4444",
+    marginTop: 8,
+    paddingHorizontal: 4,
+    textAlign: "center",
+  },
 });
 
 export default Login;

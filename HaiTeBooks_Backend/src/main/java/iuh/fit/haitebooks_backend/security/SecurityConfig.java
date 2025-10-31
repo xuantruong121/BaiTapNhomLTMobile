@@ -69,7 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/all", "/api/users/{id}").hasRole("ADMIN")
 
                         // ✅ Authenticated user routes (cart, order, payment, profile)
-                        .requestMatchers("/api/users/me/**").authenticated()
+                        .requestMatchers("/api/users/me").authenticated()
                         .requestMatchers("/api/orders/**").authenticated()
                         .requestMatchers("/api/payments/**").authenticated()
                         .requestMatchers("/api/cart/**").authenticated()
