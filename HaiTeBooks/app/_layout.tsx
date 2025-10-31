@@ -11,18 +11,22 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             header: () => <Header />,
+            animation: "none",
+            animationTypeForReplace: "pop",
           }}
         >
           <Stack.Screen
             name="account"
             options={{
               headerShown: false,
+              animation: "none",
             }}
           />
           <Stack.Screen
             name="account/register"
             options={{
               headerShown: false,
+              animation: "none",
             }}
           />
         </Stack>

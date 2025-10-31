@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -26,15 +26,23 @@ const BotTabs: React.FC<BotTabsProps> = ({
 }) => {
   const [currentTab, setCurrentTab] = useState<TabType>(activeTab);
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleTabPress = (tab: TabType) => {
     setCurrentTab(tab);
     onTabPress?.(tab);
+
+    // Chỉ navigate khi route hiện tại khác với route mục tiêu
     if (tab === "account") {
-      router.push("/account");
+      if (pathname !== "/account") {
+        router.replace("/account");
+      }
     } else if (tab === "home") {
-      router.push("/");
+      if (pathname !== "/") {
+        router.replace("/");
+      }
     }
+    // Thêm logic cho các tab khác nếu cần
   };
 
   return (
@@ -50,10 +58,10 @@ const BotTabs: React.FC<BotTabsProps> = ({
 
         <TouchableOpacity
           style={styles.tab}
-          onPress={() => handleTabPress("account")}
+          onPress={() => handleTabPress("cart")}
           activeOpacity={0.7}
         >
-          <AccountTab isActive={currentTab === "account"} />
+          <CartTab isActive={currentTab === "cart"} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -74,15 +82,17 @@ const BotTabs: React.FC<BotTabsProps> = ({
 
         <TouchableOpacity
           style={styles.tab}
-          onPress={() => handleTabPress("cart")}
+          onPress={() => handleTabPress("account")}
           activeOpacity={0.7}
         >
-          <CartTab isActive={currentTab === "cart"} />
+          <AccountTab isActive={currentTab === "account"} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
+
+export default BotTabs;
 
 const styles = StyleSheet.create({
   container: {
@@ -113,5 +123,3 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
-
-export default BotTabs;
