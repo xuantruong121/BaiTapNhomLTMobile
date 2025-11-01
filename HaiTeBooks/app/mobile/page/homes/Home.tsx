@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import BannerSale from "../../components/home/BannerSale";
 import ProductCard from "../../components/home/ProductCard";
+import axiosInstance from "../../config/axiosConfig";
 
 type ApiBook = {
   id: number;
@@ -40,10 +41,9 @@ const Home: React.FC = () => {
 
     const fetchBooks = async () => {
       try {
-        const resp = await axios.get<ApiBook[]>(
-          "http://192.168.100.156:8080/api/books",
-          { timeout: 10000, cancelToken: source.token }
-        );
+        const resp = await axiosInstance.get<ApiBook[]>("/books", {
+          cancelToken: source.token,
+        });
         if (mounted) setBooks(resp.data || []);
       } catch (err: any) {
         if (axios.isCancel(err)) return;
